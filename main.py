@@ -3,23 +3,36 @@ import time
 import re
 import requests
 import yt_dlp
-
-from dotenv import load_dotenv
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, ContextTypes, filters
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
+)
+from dotenv import load_dotenv
 
+# ------------------------
+# Load environment variables
+# ------------------------
 load_dotenv()
+BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError(
+        "CRITICAL ERROR: TELEGRAM_BOT_TOKEN не знайдено. "
+        "Додайте змінну середовища або перевірте .env"
+    )
 
-if not TOKEN:
-    raise ValueError("TELEGRAM_BOT_TOKEN не знайдено")
-
+# ------------------------
+# Temporary folder for videos
+# ------------------------
 VIDEO_FOLDER = "videos"
 os.makedirs(VIDEO_FOLDER, exist_ok=True)
 
 # ------------------------
-# START
+# Command Handlers
 # ------------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -27,9 +40,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # ------------------------
-# скачування mp4
+# Video download utilities
 # ------------------------
-def download_video(video_url):
+def download_video(video_url: str) -> str:
     filename = os.path.join(VIDEO_FOLDER, f"{int(time.time())}.mp4")
     r = requests.get(video_url, stream=True)
     with open(filename, "wb") as f:
@@ -38,10 +51,7 @@ def download_video(video_url):
                 f.write(chunk)
     return filename
 
-# ------------------------
-# TikTok
-# ------------------------
-def download_tiktok(url):
+def download_tiktok(url: str) -> str:
     filename = os.path.join(VIDEO_FOLDER, f"{int(time.time())}.mp4")
     ydl_opts = {
         "outtmpl": filename,
@@ -52,10 +62,7 @@ def download_tiktok(url):
         info = ydl.extract_info(url, download=True)
         return ydl.prepare_filename(info)
 
-# ------------------------
-# Likee MP4 search
-# ------------------------
-def find_likee_mp4(url):
+def find_likee_mp4(url: str) -> str:
     headers = {
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)"
     }
@@ -65,14 +72,14 @@ def find_likee_mp4(url):
     if video:
         return video.group(0)
     else:
-        raise Exception("MP4 не знайдено")
+        raise Exception("MP4 не знайдено на Likee")
 
-def download_likee(url):
+def download_likee(url: str) -> str:
     mp4_url = find_likee_mp4(url)
     return download_video(mp4_url)
 
 # ------------------------
-# handler
+# Message Handler
 # ------------------------
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.strip()
@@ -87,23 +94,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Підтримуються тільки TikTok та Likee")
             return
 
-        # Надсилаємо відео
         with open(file_path, "rb") as video:
             await update.message.reply_video(video)
 
-        # Після успішної відправки — видаляємо файл
         os.remove(file_path)
-
         await update.message.reply_text("✅ Готово. Надішли нове посилання.")
 
     except Exception as e:
         await update.message.reply_text(f"⚠️ Помилка: {e}")
 
 # ------------------------
-# запуск
+# Main bot function
 # ------------------------
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     print("Bot started")
