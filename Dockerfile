@@ -8,15 +8,15 @@ RUN pip install --no-cache-dir --upgrade pip uv==0.5.29
 # Set UV environment variables
 ENV UV_PYTHON_DOWNLOADS=never \
     UV_COMPILE_BYTECODE=1 \
-    UV_NO_SYNC=1
+    UV_NO_SYNC=0  # дозволь синхронізацію
 
-# Копіюємо конфіги
-COPY pyproject.toml uv.lock ./
+# Копіюємо тільки pyproject.toml
+COPY pyproject.toml ./
 
-# Додаємо yt-dlp через UV
+# Додаємо пакети через UV
 RUN uv add yt-dlp requests
 
-# Встановлюємо всі залежності
+# Встановлюємо всі залежності (UV створить uv.lock)
 RUN uv install --locked --no-dev
 
 # Копіюємо код
