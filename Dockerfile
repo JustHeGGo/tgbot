@@ -1,36 +1,32 @@
-# Базовий образ Python 3.12 slim
-FROM python:3.12-slim
+# Використовуємо повний Python 3.12 образ
+FROM python:3.12
 
-# Робоча директорія
-WORKDIR /app
-
-# Оновлення пакунків та встановлення системних залежностей для yt-dlp
+# Встановлюємо системні залежності для yt-dlp та збірки деяких пакетів
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
-    build-essential \
-    libffi-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Оновлюємо pip та встановлюємо uv
-RUN pip install --no-cache-dir --upgrade pip uv==0.5.29
+# Встановлюємо uv та інші Python залежності
+RUN pip install --upgrade pip
+RUN pip install uv==0.5.29 yt-dlp requests
 
-# Дозволяємо UV синхронізацію
-ENV UV_NO_SYNC=0 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_PYTHON_DOWNLOADS=never
+# Створюємо робочу директорію
+WORKDIR /app
 
-# Копіюємо pyproject.toml (якщо є uv.lock, то теж)
-COPY pyproject.toml uv.lock* ./
-
-# Додаємо yt-dlp та requests через UV
-RUN uv add yt-dlp requests
-
-# Встановлюємо всі залежності (не встановлюємо dev-пакети)
-RUN uv install --locked --no-dev
-
-# Копіюємо весь код
+# Копіюємо файли проекту
+COPY pyproject.toml uv.lock ./
 COPY . .
 
+# Синхронізація uv залежностей
+RUN uv sync --locked --no-dev --no-install-project
+RUN uv sync --locked --no-dev --no-editable
+
+# Встановлюємо UV змінні середовища
+ENV UV_PYTHON_DOWNLOADS=never \
+    UV_COMPILE_BYTECODE=1 \
+    UV_NO_SYNC=1
+
 # Запуск бота
-CMD ["python", "main.py"]
+CMD ["uv", "run", "main.py"]
