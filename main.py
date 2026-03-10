@@ -13,7 +13,7 @@ from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, Con
 load_dotenv()
 
 # Replace 'TELEGRAM_BOT_TOKEN' with the token you received from BotFather
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 # Папка для тимчасових відео
 VIDEO_FOLDER = "videos"
 os.makedirs(VIDEO_FOLDER, exist_ok=True)
