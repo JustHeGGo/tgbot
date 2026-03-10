@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Install uv
 RUN pip install --no-cache-dir --upgrade pip uv==0.5.29
-RUN pip install yt_dlp
+RUN pip install yt-dlp
 RUN pip install requests
 
 
