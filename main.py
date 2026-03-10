@@ -10,9 +10,9 @@ from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, Con
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-if not BOT_TOKEN:
+if not TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN не знайдено")
 
 VIDEO_FOLDER = "videos"
@@ -103,7 +103,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # запуск
 # ------------------------
 def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     print("Bot started")
