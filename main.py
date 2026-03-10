@@ -1,13 +1,20 @@
 import os
+import time
 import re
 import requests
 import yt_dlp
 
+from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, ContextTypes, filters
 
-BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-# Папка для тимчасових відео
+load_dotenv()
+
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+if not BOT_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN не знайдено")
+
 VIDEO_FOLDER = "videos"
 os.makedirs(VIDEO_FOLDER, exist_ok=True)
 
