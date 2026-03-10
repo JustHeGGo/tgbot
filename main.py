@@ -1,18 +1,11 @@
 import os
-import time
-import telebot
-from dotenv import load_dotenv
-from commands import register_commands
 import re
 import requests
 import yt_dlp
+
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, ContextTypes, filters
 
-# Load environment variables
-load_dotenv()
-
-# Replace 'TELEGRAM_BOT_TOKEN' with the token you received from BotFather
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 # Папка для тимчасових відео
 VIDEO_FOLDER = "videos"
