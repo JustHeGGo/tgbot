@@ -2,21 +2,27 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Оновлюємо pip і ставимо uv
+# Оновлюємо apt та ставимо системні залежності
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    curl \
+    build-essential \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Оновлюємо pip і встановлюємо uv
 RUN pip install --no-cache-dir --upgrade pip uv==0.5.29
 
-# Set UV environment variables
-ENV UV_PYTHON_DOWNLOADS=never \
-    UV_COMPILE_BYTECODE=1 \
-    UV_NO_SYNC=0  # дозволь синхронізацію
+# Дозволяємо UV синхронізацію
+ENV UV_NO_SYNC=0
 
-# Копіюємо тільки pyproject.toml
+# Копіюємо pyproject.toml
 COPY pyproject.toml ./
 
-# Додаємо пакети через UV
+# Додаємо yt-dlp через UV
 RUN uv add yt-dlp requests
 
-# Встановлюємо всі залежності (UV створить uv.lock)
+# Встановлюємо всі залежності через UV
 RUN uv install --locked --no-dev
 
 # Копіюємо код
